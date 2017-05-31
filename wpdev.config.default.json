@@ -1,0 +1,26 @@
+{
+  "proxytarget": "http://localdomain.dev/",
+  "themepath": "./www/wp-content/themes/mytheme",
+  "wppath": "./www",
+  "name": "my theme",
+  "author": "My Name",
+  "version": "0.0.1",
+  "uri": "http://mypage.net",
+  "description": "My Theme based on Underscore",
+  "deploy": {
+    "remote": {
+      "sshuser": "mysshuser",
+      "sshserver": "mysshserver.net",
+      "basepath": "/home/myuser/www"
+    },
+    "dbreplace": {
+      "prod": "http://proddomain.net,/home/myuser/www",
+      "dev": "http://localdomain.dev,/Users/MyUser/projects/localdomain.dev/www"
+    },
+    "excludes": "wpdev.excludes.txt",
+    "wpcli": "wp-cli.phar"
+  },
+  "jslibs": [
+    "./node_modules/mylib/mylib.js"
+  ]
+}

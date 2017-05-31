@@ -1,0 +1,12 @@
+wp-config.*.php
+.git*
+.DS*
+*node_modules*
+*twenty*
+*.sh
+.htaccess
+error_log
+rsync*
+wpdev*
+package.json
+gulpfile.js
