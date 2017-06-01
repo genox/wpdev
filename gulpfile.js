@@ -24,6 +24,8 @@ var spawn = require('child_process').spawnSync,
   sass = require('gulp-sass'),
   fs = require('fs');
 
+var calledTask = process.argv[2];
+
 try {
   fs.statSync('./wpdev.config.json');
 } catch (e) {
@@ -56,62 +58,65 @@ require('dns').lookupService('8.8.8.8', 53, function(err, hostname, service) {
   }
 });
 
-var testExecutables = ['php', 'rsync', 'ssh', 'scp'];
-var testFiles = ['backup', config.wppath, config.wppath + '/wp-config.php', config.wppath + '/wp-config.live.php', config.wppath + '/wp-config.dev.php', config.wppath + '/wp-cli.phar', config.wppath + '/wp-content', config.wppath + '/wp-content/themes', config.themepath];
+if (calledTask !== 'install-wp') {
+  var testExecutables = ['php', 'rsync', 'ssh', 'scp'];
+  var testFiles = ['backup', config.wppath, config.wppath + '/wp-config.php', config.wppath + '/wp-config.live.php', config.wppath + '/wp-config.dev.php', config.wppath + '/wp-cli.phar', config.wppath + '/wp-content', config.wppath + '/wp-content/themes', config.themepath];
 
-for (var i = 0, len = testExecutables.length; i < len; i++) {
-  try {
-    let stdout = spawn('which', [testExecutables[i]], spawnConfig).stdout;
-    if (!stdout) {
-      throw (testExecutables[i] + ' not found in PATH. Exiting..')
-    }
-  } catch (e) {
-    gutil.log(e);
-    requirementsError++;
-  }
-}
-
-for (var i = 0, len = testFiles.length; i < len; i++) {
-  try {
-    fs.statSync(process.cwd() + '/' + testFiles[i]);
-  } catch (e) {
-    if (testFiles[i] == config.wppath + 'wp-cli.phar') {
-      gutil.log(testFiles[i] + ' not found in ' + process.cwd() + '. Downloading now..');
-      spawn('curl', ['-o', config.wppath + '/wp-cli.phar', 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar'], spawnConfig);
-    } else if (testFiles[i] == config.themepath) {
-      gutil.log(testFiles[i] + ' not found in ' + process.cwd() + '. Creating now..');
-      spawn('mkdir', [config.wppath + '/wp-content'], spawnConfig);
-      spawn('mkdir', [config.wppath + '/wp-content/themes'], spawnConfig);
-      spawn('mkdir', [config.themepath], spawnConfig);
-    } else if (testFiles[i] == 'backup') {
-      gutil.log(testFiles[i] + ' not found in ' + process.cwd() + '. Creating now..');
-      spawn('mkdir', ['backup'], spawnConfig);
-    } else {
-      gutil.log(testFiles[i] + ' not found in ' + process.cwd() + '. Exiting.');
+  for (var i = 0, len = testExecutables.length; i < len; i++) {
+    try {
+      let stdout = spawn('which', [testExecutables[i]], spawnConfig).stdout;
+      if (!stdout) {
+        throw (testExecutables[i] + ' not found in PATH. Exiting..')
+      }
+    } catch (e) {
+      gutil.log(e);
       requirementsError++;
     }
   }
-}
 
-let cmd = 'if [ -f ' + config.deploy.remote.basepath + '/wp-cli.phar ]; then echo exists; else echo missing; fi'
-let remoteWpCliTest = spawn('ssh', [sshLogin, cmd], spawnConfig);
-if (remoteWpCliTest.stdout.indexOf('exists') < 0) {
-  gutil.log('Remote wp-cli missing. Uploading now..');
-  spawn('rsync', ['-avz', config.wppath + '/wp-cli.phar', rsyncLocation], spawnConfig);
-}
+  for (var i = 0, len = testFiles.length; i < len; i++) {
+    try {
+      fs.statSync(process.cwd() + '/' + testFiles[i]);
+    } catch (e) {
+      if (testFiles[i] == config.wppath + 'wp-cli.phar') {
+        gutil.log(testFiles[i] + ' not found in ' + process.cwd() + '. Downloading now..');
+        spawn('curl', ['-o', config.wppath + '/wp-cli.phar', 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar'], spawnConfig);
+      } else if (testFiles[i] == config.themepath) {
+        gutil.log(testFiles[i] + ' not found in ' + process.cwd() + '. Creating now..');
+        spawn('mkdir', ['www'], spawnConfig);
+        spawn('mkdir', [config.wppath + '/wp-content'], spawnConfig);
+        spawn('mkdir', [config.wppath + '/wp-content/themes'], spawnConfig);
+        spawn('mkdir', [config.themepath], spawnConfig);
+      } else if (testFiles[i] == 'backup') {
+        gutil.log(testFiles[i] + ' not found in ' + process.cwd() + '. Creating now..');
+        spawn('mkdir', ['backup'], spawnConfig);
+      } else {
+        gutil.log(testFiles[i] + ' not found in ' + process.cwd() + '. Exiting.');
+        requirementsError++;
+      }
+    }
+  }
 
-// if a requirement fails, we exit here before causing any disturbances in the force..
-if (requirementsError > 0) {
-  process.exit();
-}
+  let cmd = 'if [ -f ' + config.deploy.remote.basepath + '/wp-cli.phar ]; then echo exists; else echo missing; fi'
+  let remoteWpCliTest = spawn('ssh', [sshLogin, cmd], spawnConfig);
+  if (remoteWpCliTest.stdout.indexOf('exists') < 0) {
+    gutil.log('Remote wp-cli missing. Uploading now..');
+    spawn('rsync', ['-avz', config.wppath + '/wp-cli.phar', rsyncLocation], spawnConfig);
+  }
 
+  // if a requirement fails, we exit here before causing any disturbances in the force..
+  if (requirementsError > 0) {
+    process.exit();
+  }
+}
 
 // WP CLI: install or update to localhost, push to remote
 
 gulp.task('underscore-install', function() {
-  spawn('curl', ['-O', 'https://github.com/Automattic/_s/archive/master.zip'], spawnConfig);
-  spawn('unzip', ['-f', 'master.zip', '\'_s-master/*\'', config.themepath], spawnConfig);
-  spawn('rm', ['-f', 'master.zip'], spawnConfig);
+  gutil.log(spawn('mkdir', [config.wppath], spawnConfig).stdout);
+  gutil.log(spawn('curl', ['-O', 'https://github.com/Automattic/_s/archive/master.zip'], spawnConfig).stdout);
+  gutil.log(spawn('unzip', ['-f', 'master.zip', '\'_s-master/*\'', config.themepath], spawnConfig).stdout);
+  gutil.log(spawn('rm', ['-f', 'master.zip'], spawnConfig).stdout);
 });
 
 gulp.task('wp-cli-install', function() {
@@ -120,8 +125,11 @@ gulp.task('wp-cli-install', function() {
 });
 
 gulp.task('install-wp', function() {
-  spawn('mkdir', ['www'], spawnConfig);
+  gutil.log(spawn('mkdir', [config.wppath], spawnConfig).output);
+  gutil.log(spawn('curl', ['-O', 'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar'], spawnConfig).output);
+  gutil.log(spawn('mv', ['wp-cli.phar', config.wppath + '/'], spawnConfig).output);
   gutil.log(spawn('php', [config.wppath + '/wp-cli.phar', '--path=' + config.wppath, 'core', 'download'], spawnConfig).output);
+  gutil.log(spawn('mv', ['wp-cli.phar', config.wppath + '/'], spawnConfig).output);
 });
 
 // project setup
@@ -131,6 +139,12 @@ gulp.task('version-bump', function() {
     .pipe(bump())
     .pipe(gulp.dest('./'));
 });
+
+gulp.task('wp-config', function() {
+  gutil.log(spawn('cp', ['-p', config.wppath + '/wp-config.php', config.wppath + 'wp-config.prod.php'], spawnConfig).stdout);
+  gutil.log(spawn('cp', ['-p', config.wppath + '/wp-config.php', config.wppath + 'wp-config.dev.php'], spawnConfig).stdout);
+});
+
 
 gulp.task('prepare-scss', function() {
   return gulp.src([config.themepath + '/sass/style.scss'])

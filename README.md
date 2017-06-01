@@ -16,7 +16,7 @@ For the brave ones, here's a quick guide:
 6. Create a DB for your local WP install
 7. Create wp-config.dev.php and wp-config.prod.php and edit them accordingly
 8. `gulp underscore-install` will download the latest version from Automattic's github repo and place it in wp-content/themes, renaming the folder according to what you defined in the config.
-9. Now see if your local WP instance purrs, activate your theme and install the plugin `migratedb`
+9. Now see if your local WP instance purrs, activate your theme and install the plugin `migratedb` ("WP Migrate DB")
 
 * The default gulp tasks will start a watcher and open the local dev instance via browsersync proxytarget in your browser.
 * Your theme's style.css (containing theme meta data) will be populated based on info found in wpdev.config.json.
