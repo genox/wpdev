@@ -1,12 +1,16 @@
 {
   "proxytarget": "http://localdomain.dev/",
-  "themepath": "./www/wp-content/themes/mytheme",
-  "wppath": "./www",
-  "name": "my theme",
-  "author": "My Name",
-  "version": "0.0.1",
-  "uri": "http://mypage.net",
-  "description": "My Theme based on Underscore",
+  "theme": {
+    "name": "my theme",
+    "author": "My Name",
+    "version": "0.0.1",
+    "uri": "http://mypage.net",
+    "description": "My Theme based on Underscore",
+  },
+  "directories" : {
+    "wordpress": "./www",
+    "theme": "mytheme"
+  },
   "deploy": {
     "remote": {
       "sshuser": "mysshuser",

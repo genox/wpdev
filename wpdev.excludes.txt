@@ -6,7 +6,7 @@ wp-config.*.php
 error_log
 rsync*
 wpdev*
-package.json
+package*.json
 gulpfile.js
-*.dev.*
-*.prod.*
+*.dev*
+*.prod*

@@ -1,10 +1,10 @@
 {
   "name": "wpdev",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "WordPress Theme Development Automation with Gulp for _s",
   "author": "OS",
   "repository": "https://github.com/genox/wpdev",
-  "licence": "https://github.com/genox/wpdev/blob/master/LICENSE",
+  "license": "https://github.com/genox/wpdev/blob/master/LICENSE",
   "scripts": {
     "watch": "gulp"
   },
